@@ -10,6 +10,42 @@ import { createProjectSnapshot } from '@/lib/engine/snapshot';
 import { CategoryResult } from '@/types/audit.types';
 import { ProjectSnapshot } from '@/types/project.types';
 
+import { getProjectSnapshot } from '@/lib/engine/orchestrator';
+
+export async function GET(request: NextRequest): Promise<NextResponse> {
+  try {
+    const { searchParams } = new URL(request.url);
+    const projectId = searchParams.get('id') || searchParams.get('projectId');
+
+    if (!projectId) {
+      return NextResponse.json({ error: 'Missing required query parameter: id' }, { status: 400 });
+    }
+
+    const snapshot = getProjectSnapshot(projectId);
+    if (!snapshot) {
+      return NextResponse.json({ error: `Project snapshot for '${projectId}' not found.` }, { status: 404 });
+    }
+
+    const securityRes = await runSecurityCheck(snapshot);
+    const healthRes = await runCodeHealthCheck(snapshot);
+
+    const report = calculateReleaseStatus({
+      snapshot,
+      categoryResults: {
+        security: securityRes,
+        'code-health': healthRes,
+      },
+    });
+
+    return NextResponse.json(report, { status: 200 });
+  } catch (err: any) {
+    return NextResponse.json(
+      { error: err?.message || 'Failed to generate report' },
+      { status: 500 }
+    );
+  }
+}
+
 export async function POST(request: NextRequest): Promise<NextResponse> {
   try {
     const body = await request.json().catch(() => ({}));

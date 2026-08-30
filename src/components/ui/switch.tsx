@@ -4,49 +4,44 @@ import * as React from "react";
 import { cn } from "@/lib/utils";
 
 export interface SwitchProps {
-  checked: boolean;
-  onCheckedChange: (checked: boolean) => void;
+  checked?: boolean;
+  onCheckedChange?: (checked: boolean) => void;
   disabled?: boolean;
   className?: string;
   id?: string;
-  size?: "sm" | "md";
 }
 
 export function Switch({
-  checked,
+  checked = false,
   onCheckedChange,
   disabled = false,
   className,
   id,
-  size = "md",
 }: SwitchProps) {
-  const isSm = size === "sm";
+  const handleClick = () => {
+    if (!disabled && onCheckedChange) {
+      onCheckedChange(!checked);
+    }
+  };
 
   return (
     <button
       type="button"
       role="switch"
-      id={id}
       aria-checked={checked}
+      id={id}
       disabled={disabled}
-      onClick={() => !disabled && onCheckedChange(!checked)}
+      onClick={handleClick}
       className={cn(
-        "relative inline-flex shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus-visible:ring-2 focus-visible:ring-status-cyan disabled:cursor-not-allowed disabled:opacity-50",
-        isSm ? "h-5 w-9" : "h-6 w-11",
-        checked ? "bg-status-cyan" : "bg-oled-800",
+        "relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-500 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 select-none",
+        checked ? "bg-cyan-500" : "bg-zinc-800",
         className
       )}
     >
       <span
-        aria-hidden="true"
         className={cn(
-          "pointer-events-none inline-block rounded-full bg-white shadow-lg ring-0 transition duration-200 ease-in-out",
-          isSm ? "h-4 w-4" : "h-5 w-5",
-          checked
-            ? isSm
-              ? "translate-x-4 bg-black"
-              : "translate-x-5 bg-black"
-            : "translate-x-0 bg-slate-400"
+          "pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow-lg ring-0 transition duration-200 ease-in-out",
+          checked ? "translate-x-5" : "translate-x-0"
         )}
       />
     </button>

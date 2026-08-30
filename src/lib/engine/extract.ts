@@ -7,6 +7,7 @@ import glob from 'fast-glob';
 
 export interface ExtractedWorkspace {
   projectId: string;
+  originalName: string;
   workspacePath: string;
   totalFiles: number;
   ignoredFiles: number;
@@ -47,9 +48,6 @@ const CODE_EXTENSIONS = new Set([
   '.css', '.json', '.vue', '.svelte', '.sh'
 ]);
 
-/**
- * Validates whether extracted files represent a real software codebase.
- */
 function validateCodebase(files: string[]): boolean {
   let hasManifest = false;
   let codeFileCount = 0;
@@ -68,9 +66,6 @@ function validateCodebase(files: string[]): boolean {
   return hasManifest || codeFileCount >= 1;
 }
 
-/**
- * Strips single top-level wrapper directory (e.g. repo-main/src -> src)
- */
 function normalizeRootDirectory(targetDir: string): string {
   const entries = fs.readdirSync(targetDir).filter((e) => e !== '__MACOSX' && e !== '.DS_Store');
   if (entries.length === 1) {
@@ -82,21 +77,21 @@ function normalizeRootDirectory(targetDir: string): string {
   return targetDir;
 }
 
-/**
- * Process input (zip buffer, zip path, or directory path) into a validated workspace.
- */
 export async function processProjectInput(
-  input: Buffer | string
+  input: Buffer | string,
+  originalFilename?: string
 ): Promise<ExtractedWorkspace> {
   const projectId = `pf_${crypto.randomUUID()}`;
   const baseTempPath = path.join(os.tmpdir(), 'preflight', projectId);
 
   fs.mkdirSync(baseTempPath, { recursive: true });
 
-  let targetWorkspace;
+  let targetWorkspace: string;
+  let derivedName = originalFilename ? path.basename(originalFilename, path.extname(originalFilename)) : 'workspace';
 
   if (typeof input === 'string' && fs.existsSync(input) && fs.statSync(input).isDirectory()) {
     targetWorkspace = input;
+    derivedName = path.basename(input);
   } else {
     try {
       const zip = new AdmZip(input);
@@ -111,6 +106,10 @@ export async function processProjectInput(
 
       zip.extractAllTo(baseTempPath, true);
       targetWorkspace = normalizeRootDirectory(baseTempPath);
+      
+      if (derivedName === 'workspace' && targetWorkspace !== baseTempPath) {
+        derivedName = path.basename(targetWorkspace);
+      }
     } catch (err: any) {
       cleanupWorkspace(baseTempPath);
       throw new Error(`Failed to extract project archive: ${err.message}`);
@@ -141,6 +140,7 @@ export async function processProjectInput(
 
   return {
     projectId,
+    originalName: derivedName,
     workspacePath: targetWorkspace,
     totalFiles: validFiles.length,
     ignoredFiles: allFiles.length - validFiles.length,

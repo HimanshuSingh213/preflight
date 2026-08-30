@@ -3,6 +3,7 @@
 import React from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { motion } from "framer-motion";
 import { useAuditStore } from "@/store/audit-store";
 import { AuditSelector } from "@/components/audit/AuditSelector";
 import { Button } from "@/components/ui/button";
@@ -13,28 +14,30 @@ import {
   FileCode,
   Layers,
   Terminal,
-  CheckCircle2,
   Package,
-  Cpu,
-  Clock,
-  Sparkles,
 } from "lucide-react";
 
 export default function ProjectPage() {
   const router = useRouter();
-  const { snapshot } = useAuditStore();
+  const snapshot = useAuditStore((s) => s.snapshot);
+
+  React.useEffect(() => {
+    if (!snapshot) {
+      router.replace("/");
+    }
+  }, [snapshot, router]);
 
   if (!snapshot) {
     return (
-      <div className="min-h-screen bg-black text-slate-100 flex flex-col items-center justify-center p-6 text-center space-y-4">
-        <div className="w-12 h-12 rounded-2xl bg-oled-850 border border-oled-800 flex items-center justify-center text-status-cyan">
+      <div className="min-h-screen bg-black text-zinc-100 flex flex-col items-center justify-center p-6 text-center space-y-4">
+        <div className="w-12 h-12 rounded-xl bg-zinc-900 border border-zinc-800 flex items-center justify-center text-cyan-400">
           <FolderArchive className="w-6 h-6" />
         </div>
-        <h2 className="text-2xl font-heading font-bold text-white">
-          No Active Project Loaded
+        <h2 className="text-2xl font-heading font-bold text-white tracking-tight">
+          No Active Workspace Loaded
         </h2>
-        <p className="text-sm text-slate-400 max-w-sm">
-          Please upload a .zip project archive or select a demo project to configure your preflight checks.
+        <p className="text-sm text-zinc-400 max-w-sm font-body">
+          Redirecting to project upload page...
         </p>
         <Link href="/">
           <Button variant="cyan" size="sm">
@@ -49,28 +52,28 @@ export default function ProjectPage() {
   const { stack } = snapshot;
 
   return (
-    <div className="min-h-screen bg-black text-slate-100 selection:bg-cyan-500 selection:text-black">
+    <div className="min-h-screen bg-black text-zinc-100 selection:bg-cyan-500 selection:text-black">
       {/* Top Header */}
-      <header className="border-b border-oled-800 bg-black/80 backdrop-blur-md sticky top-0 z-40">
+      <header className="border-b border-zinc-800 bg-zinc-950/90 sticky top-0 z-40">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <Link href="/" className="text-slate-400 hover:text-white transition-colors">
+            <Link href="/" className="text-zinc-400 hover:text-white transition-colors">
               <ChevronLeft className="w-5 h-5" />
             </Link>
             <div className="flex items-center gap-2">
-              <span className="font-heading font-extrabold text-lg text-white">
+              <span className="font-heading font-extrabold text-lg text-white tracking-tight">
                 PreFlight
               </span>
-              <span className="text-slate-600 font-mono">/</span>
-              <span className="font-mono text-sm text-status-cyan font-bold truncate max-w-[200px] sm:max-w-none">
+              <span className="text-zinc-600 font-mono">/</span>
+              <span className="font-mono text-sm text-cyan-400 font-bold truncate max-w-[200px] sm:max-w-none">
                 {snapshot.name}
               </span>
             </div>
           </div>
 
           <Link href="/">
-            <Button variant="outline" size="sm" className="text-xs">
-              Upload Another ZIP
+            <Button variant="outline" size="sm" className="text-xs border-zinc-800">
+              Upload Workspace
             </Button>
           </Link>
         </div>
@@ -79,16 +82,21 @@ export default function ProjectPage() {
       {/* Main Container */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-10">
         {/* Project Header / Stack Info */}
-        <section className="bg-oled-900 border border-oled-800 rounded-3xl p-6 md:p-8 space-y-6 shadow-2xl">
-          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-oled-800 pb-6">
+        <motion.section
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.25 }}
+          className="bg-zinc-900 border border-zinc-800 rounded-2xl p-6 md:p-8 space-y-6"
+        >
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-zinc-800 pb-6">
             <div className="space-y-1">
               <div className="flex items-center gap-2">
-                <span className="w-2.5 h-2.5 rounded-full bg-status-ready animate-pulse" />
-                <span className="text-xs font-mono font-bold uppercase tracking-wider text-slate-400">
+                <span className="w-2.5 h-2.5 rounded-full bg-emerald-400" />
+                <span className="text-xs font-mono font-bold uppercase tracking-wider text-zinc-400">
                   AST Snapshot Extracted
                 </span>
               </div>
-              <h1 className="text-2xl md:text-3xl font-heading font-extrabold text-white">
+              <h1 className="text-2xl md:text-3xl font-heading font-extrabold text-white tracking-tight">
                 {snapshot.name}
               </h1>
             </div>
@@ -111,36 +119,36 @@ export default function ProjectPage() {
             </div>
           </div>
 
-          {/* Quick Metrics & Detected Scripts */}
+          {/* Metrics Grid */}
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-            <div className="bg-oled-950 border border-oled-800 p-4 rounded-2xl space-y-1 font-mono">
-              <span className="text-[11px] text-slate-500 block">TOTAL FILES</span>
+            <div className="bg-zinc-950 border border-zinc-800 p-4 rounded-xl space-y-1 font-mono">
+              <span className="text-[11px] text-zinc-500 block uppercase">TOTAL FILES</span>
               <span className="text-xl font-bold text-white">
                 {stack.totalFiles}
               </span>
             </div>
 
-            <div className="bg-oled-950 border border-oled-800 p-4 rounded-2xl space-y-1 font-mono">
-              <span className="text-[11px] text-slate-500 block">ANALYZED</span>
-              <span className="text-xl font-bold text-status-cyan">
+            <div className="bg-zinc-950 border border-zinc-800 p-4 rounded-xl space-y-1 font-mono">
+              <span className="text-[11px] text-zinc-500 block uppercase">ANALYZED</span>
+              <span className="text-xl font-bold text-cyan-400">
                 {stack.analyzedFiles} Files
               </span>
             </div>
 
-            <div className="bg-oled-950 border border-oled-800 p-4 rounded-2xl space-y-1 font-mono">
-              <span className="text-[11px] text-slate-500 block">TEST SUITE</span>
+            <div className="bg-zinc-950 border border-zinc-800 p-4 rounded-xl space-y-1 font-mono">
+              <span className="text-[11px] text-zinc-500 block uppercase">TEST SUITE</span>
               <span
                 className={`text-xl font-bold ${
-                  stack.hasTests ? "text-status-ready" : "text-slate-500"
+                  stack.hasTests ? "text-emerald-400" : "text-zinc-500"
                 }`}
               >
                 {stack.hasTests ? "Detected" : "None"}
               </span>
             </div>
 
-            <div className="bg-oled-950 border border-oled-800 p-4 rounded-2xl space-y-1 font-mono">
-              <span className="text-[11px] text-slate-500 block">TYPE SYSTEM</span>
-              <span className="text-xl font-bold text-status-ready">
+            <div className="bg-zinc-950 border border-zinc-800 p-4 rounded-xl space-y-1 font-mono">
+              <span className="text-[11px] text-zinc-500 block uppercase">TYPE SYSTEM</span>
+              <span className="text-xl font-bold text-emerald-400">
                 {stack.hasTypeScript ? "TypeScript Strict" : "Standard JS"}
               </span>
             </div>
@@ -149,21 +157,21 @@ export default function ProjectPage() {
           {/* Scripts Bar */}
           {snapshot.scripts && Object.keys(snapshot.scripts).length > 0 && (
             <div className="pt-2 flex flex-wrap items-center gap-2">
-              <span className="text-xs font-mono text-slate-500 flex items-center gap-1.5 mr-2">
-                <Terminal className="w-3.5 h-3.5 text-status-cyan" />
+              <span className="text-xs font-mono text-zinc-500 flex items-center gap-1.5 mr-2">
+                <Terminal className="w-3.5 h-3.5 text-cyan-400" />
                 Detected npm scripts:
               </span>
               {Object.entries(snapshot.scripts).map(([cmd, script]) => (
                 <span
                   key={cmd}
-                  className="px-2.5 py-1 rounded-lg bg-oled-950 border border-oled-800 text-[11px] font-mono text-slate-300"
+                  className="px-2.5 py-1 rounded-lg bg-zinc-950 border border-zinc-800 text-[11px] font-mono text-zinc-300"
                 >
-                  <strong className="text-status-cyan">{cmd}:</strong> {String(script)}
+                  <strong className="text-cyan-400">{cmd}:</strong> {String(script)}
                 </span>
               ))}
             </div>
           )}
-        </section>
+        </motion.section>
 
         {/* Audit Selection Suite */}
         <section>

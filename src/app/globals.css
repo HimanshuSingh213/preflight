@@ -5,29 +5,51 @@
   --font-body: var(--font-body), sans-serif;
   --font-mono: var(--font-mono), monospace;
 
-  /* OLED Deep Dark Theme Tokens */
-  --color-oled-950: #000000; /* Pure OLED Canvas */
-  --color-oled-900: #08080a; /* Elevated OLED Surface */
-  --color-oled-850: #101014; /* Card / Input Surface */
-  --color-oled-800: #1c1c24; /* 1px Glass Borders */
-  --color-oled-700: #2d2d38; /* Hover Border */
+  /* Premium Solid Colors */
+  --color-zinc-950: #09090b;
+  --color-zinc-900: #18181b;
+  --color-zinc-800: #27272a;
+  --color-zinc-700: #3f3f46;
 
   /* Status Colors */
-  --color-status-ready: #10b981;   /* Electric Emerald (Ready to Ship / Pass) */
-  --color-status-review: #f59e0b;  /* Cyber Amber (Review / Warnings) */
-  --color-status-blocked: #f43f5e; /* Laser Crimson (Blocked / Critical) */
-  --color-status-cyan: #06b6d4;    /* Tech Cyan / Active Highlights */
+  --color-status-ready: #10b981;   /* Emerald */
+  --color-status-review: #f59e0b;  /* Amber */
+  --color-status-blocked: #f43f5e; /* Crimson */
+  --color-status-cyan: #06b6d4;    /* Cyan */
 }
 
 :root {
   --background: #000000;
   --foreground: #f8fafc;
+  color-scheme: dark;
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
   font-family: var(--font-body), sans-serif;
+  scrollbar-width: thin;
+  scrollbar-color: #27272a #09090b;
+}
+
+/* Custom Dark Theme Scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #09090b;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #27272a;
+  border-radius: 4px;
+  border: 2px solid #09090b;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #3f3f46;
 }
 
 h1, h2, h3, h4, h5, h6 {
@@ -37,4 +59,3 @@ h1, h2, h3, h4, h5, h6 {
 code, pre, kbd, samp {
   font-family: var(--font-mono), monospace;
 }
-

@@ -5,7 +5,7 @@ import crypto from 'crypto';
 import getPort from 'get-port';
 import { chromium, Browser, Page } from 'playwright';
 import AxeBuilder from '@axe-core/playwright';
-import { execa, ExecaChildProcess } from 'execa';
+import { execa } from 'execa';
 
 export interface RouteCrawlResult {
   route: string;
@@ -82,7 +82,7 @@ export async function runBrowserAudit(
   }
   const args = cmdParts.slice(1);
 
-  let serverProcess: ExecaChildProcess | null = null;
+  let serverProcess: ReturnType<typeof execa> | null = null;
   let serverStarted = false;
 
   try {

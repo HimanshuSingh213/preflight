@@ -515,6 +515,93 @@ export const useAuditStore = create<AuditState>((set, get) => ({
     addLog("info", `Starting PreFlight analysis on ${snapshot.name}...`);
     addLog("info", `Selected ${selectedChecks.length} categories: ${selectedChecks.join(", ")}`);
 
+    // Check if this is a real server-backed project workspace (starts with 'proj_' real upload)
+    const isSamplePreset = snapshot.id.startsWith('proj_nextjs_saas_') ||
+      snapshot.id.startsWith('proj_express_clean_') ||
+      snapshot.id.startsWith('proj_vulnerable_app_');
+
+    if (!isSamplePreset && typeof window !== 'undefined') {
+      try {
+        const startRes = await fetch('/api/audit/start', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ projectId: snapshot.id, selectedChecks }),
+        });
+
+        if (startRes.ok) {
+          const { streamUrl } = await startRes.json();
+          const eventSource = new EventSource(streamUrl);
+          const realFindings: Finding[] = [];
+
+          await new Promise<void>((resolve) => {
+            eventSource.onmessage = (e) => {
+              try {
+                const event = JSON.parse(e.data);
+
+                if (event.progressPercent !== undefined) {
+                  set({ auditProgress: event.progressPercent });
+                }
+
+                if (event.category) {
+                  set({ currentCategory: event.category });
+                }
+
+                if (event.type === 'CATEGORY_STARTED') {
+                  updateCategoryProgress(event.category!, 'running');
+                }
+
+                if (event.message) {
+                  addLog(event.level || 'info', event.message, event.category);
+                }
+
+                if (event.type === 'CATEGORY_FINISHED' && event.result) {
+                  const res = event.result;
+                  if (res.findings) {
+                    realFindings.push(...res.findings);
+                  }
+                  updateCategoryProgress(
+                    event.category!,
+                    res.findings?.some((f: Finding) => f.severity === 'critical' || f.isBlocker) ? 'failed' : 'completed',
+                    res.score,
+                    res.findings,
+                    res.summary,
+                    res.durationMs
+                  );
+                }
+
+                if (event.type === 'AUDIT_COMPLETE' || event.type === 'AUDIT_ERROR') {
+                  eventSource.close();
+                  if (event.report) {
+                    set({ report: event.report });
+                  }
+                  set({
+                    isAuditing: false,
+                    auditProgress: 100,
+                    currentCategory: null,
+                    findings: realFindings,
+                  });
+                  get().recalculateReport();
+                  resolve();
+                }
+              } catch {
+                // Ignore SSE JSON parse error
+              }
+            };
+
+            eventSource.onerror = () => {
+              eventSource.close();
+              resolve();
+            };
+          });
+
+          if (navigateCallback) navigateCallback();
+          return;
+        }
+      } catch {
+        // Fallback to simulation if SSE API request fails
+      }
+    }
+
     const checksToRun = selectedChecks;
     const collectedFindings: Finding[] = [];
 
@@ -555,11 +642,11 @@ export const useAuditStore = create<AuditState>((set, get) => ({
       if (catFindings.length > 0) {
         addLog(
           hasCritical ? "error" : "warn",
-          `[${cat.toUpperCase()}] Found ${catFindings.length} issue(s) • Category Score: ${catScore}/100`,
+          `[${cat.toUpperCase()}] Found ${catFindings.length} issue(s) | Category Score: ${catScore}/100`,
           cat
         );
       } else {
-        addLog("success", `[${cat.toUpperCase()}] All checks passed cleanly • Score: 100/100`, cat);
+        addLog("success", `[${cat.toUpperCase()}] All checks passed cleanly | Score: 100/100`, cat);
       }
 
       updateCategoryProgress(
@@ -567,7 +654,7 @@ export const useAuditStore = create<AuditState>((set, get) => ({
         catStatus,
         catScore,
         catFindings,
-        `${catFindings.length} issue(s) detected • Completed in ${duration}ms`,
+        `${catFindings.length} issue(s) detected | Completed in ${duration}ms`,
         duration
       );
 

@@ -1,8 +1,16 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import Prism from "prismjs";
+import "prismjs/components/prism-typescript";
+import "prismjs/components/prism-jsx";
+import "prismjs/components/prism-tsx";
+import "prismjs/components/prism-javascript";
+import "prismjs/components/prism-json";
+import "prismjs/components/prism-bash";
+import "prismjs/components/prism-python";
 import { CodeLocation } from "@/types";
-import { Copy, Check, FileCode, ExternalLink } from "lucide-react";
+import { Copy, Check, FileCode } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 interface CodeSnippetViewerProps {
@@ -14,15 +22,18 @@ interface CodeSnippetViewerProps {
 
 export function CodeSnippetViewer({
   location,
-  title,
   detector,
   severity = "high",
 }: CodeSnippetViewerProps) {
   const [copied, setCopied] = useState(false);
 
+  useEffect(() => {
+    Prism.highlightAll();
+  }, [location?.snippet]);
+
   if (!location || !location.snippet) {
     return (
-      <div className="bg-oled-950 border border-oled-800 rounded-xl p-4 text-xs font-mono text-slate-500">
+      <div className="bg-zinc-950 border border-zinc-800 rounded-xl p-4 text-xs font-mono text-zinc-500">
         No code snippet available for this finding.
       </div>
     );
@@ -39,17 +50,26 @@ export function CodeSnippetViewer({
   const lines = location.snippet.split("\n");
   const targetLineNumber = location.line;
 
+  const getLanguage = (filepath?: string) => {
+    if (!filepath) return "tsx";
+    if (filepath.endsWith(".py")) return "python";
+    if (filepath.endsWith(".js") || filepath.endsWith(".jsx")) return "javascript";
+    if (filepath.endsWith(".ts")) return "typescript";
+    if (filepath.endsWith(".json")) return "json";
+    return "tsx";
+  };
+
   return (
-    <div className="rounded-xl border border-oled-800 bg-oled-950 overflow-hidden shadow-inner font-mono text-xs">
+    <div className="rounded-2xl border border-zinc-800 bg-zinc-950 overflow-hidden shadow-2xl font-mono text-xs">
       {/* Code Header Bar */}
-      <div className="flex items-center justify-between px-4 py-2.5 bg-oled-900 border-b border-oled-800 text-slate-300">
+      <div className="flex items-center justify-between px-4 py-2.5 bg-zinc-900 border-b border-zinc-800 text-zinc-300">
         <div className="flex items-center gap-2 truncate">
-          <FileCode className="w-4 h-4 text-status-cyan shrink-0" />
-          <span className="text-status-cyan font-bold truncate">
+          <FileCode className="w-4 h-4 text-cyan-400 shrink-0" />
+          <span className="text-cyan-300 font-bold truncate">
             {location.file}
           </span>
           {targetLineNumber && (
-            <span className="text-slate-400 shrink-0">
+            <span className="text-zinc-500 shrink-0">
               (Line {targetLineNumber}
               {location.column ? `:${location.column}` : ""})
             </span>
@@ -58,7 +78,7 @@ export function CodeSnippetViewer({
 
         <div className="flex items-center gap-2 shrink-0">
           {detector && (
-            <span className="text-[10px] text-slate-500 hidden sm:inline-block">
+            <span className="text-[10px] text-zinc-500 hidden sm:inline-block">
               Detector: {detector}
             </span>
           )}
@@ -66,11 +86,11 @@ export function CodeSnippetViewer({
             variant="ghost"
             size="sm"
             onClick={handleCopy}
-            className="h-7 px-2 text-[11px] text-slate-400 hover:text-white"
+            className="h-7 px-2 text-[11px] text-zinc-400 hover:text-white"
           >
             {copied ? (
               <>
-                <Check className="w-3 h-3 text-status-ready mr-1" />
+                <Check className="w-3 h-3 text-emerald-400 mr-1" />
                 Copied
               </>
             ) : (
@@ -83,17 +103,15 @@ export function CodeSnippetViewer({
         </div>
       </div>
 
-      {/* Code Snippet Box */}
-      <div className="p-4 overflow-x-auto text-slate-300 leading-relaxed font-mono">
-        <pre className="space-y-1">
+      {/* Code Snippet Box with Prism.js Highlighting */}
+      <div className="p-4 overflow-x-auto text-zinc-200 leading-relaxed font-mono">
+        <pre className={`language-${getLanguage(location.file)} space-y-1 bg-transparent p-0 m-0`}>
           {lines.map((line, idx) => {
-            // Check if this line matches the target line or contains high-risk keywords
             const isOffendingLine =
               line.includes(String(targetLineNumber)) ||
               line.includes("STRIPE_SECRET") ||
               line.includes("sk_live_") ||
               line.includes("redirect(") ||
-              line.includes("bg-cyan-300") ||
               line.includes("SELECT * FROM");
 
             return (
@@ -102,12 +120,12 @@ export function CodeSnippetViewer({
                 className={`flex items-start px-2 py-0.5 rounded transition-colors ${
                   isOffendingLine
                     ? severity === "critical"
-                      ? "bg-status-blocked/20 text-rose-300 border-l-2 border-status-blocked"
-                      : "bg-status-review/15 text-amber-200 border-l-2 border-status-review"
-                    : "hover:bg-oled-900/50"
+                      ? "bg-rose-500/20 text-rose-300 border-l-2 border-rose-500"
+                      : "bg-amber-500/15 text-amber-200 border-l-2 border-amber-500"
+                    : "hover:bg-zinc-900/50"
                 }`}
               >
-                <code className="whitespace-pre">{line}</code>
+                <code>{line}</code>
               </div>
             );
           })}

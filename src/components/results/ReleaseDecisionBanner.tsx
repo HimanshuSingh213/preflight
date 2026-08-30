@@ -6,9 +6,6 @@ import {
   ShieldAlert,
   ShieldCheck,
   AlertTriangle,
-  CheckCircle2,
-  XCircle,
-  Sparkles,
 } from "lucide-react";
 
 interface ReleaseDecisionBannerProps {
@@ -39,10 +36,9 @@ export function ReleaseDecisionBanner({
       return {
         title: "RELEASE DECISION: BLOCKED",
         badgeText: "BLOCKED",
-        badgeClass: "bg-status-blocked/20 text-status-blocked border-status-blocked/40",
-        containerClass:
-          "bg-status-blocked/10 border-status-blocked/40 shadow-[0_0_50px_rgba(244,63,94,0.15)]",
-        scoreColor: "text-status-blocked",
+        badgeClass: "bg-rose-950/40 text-rose-300 border-rose-500/40",
+        containerClass: "bg-zinc-900 border-rose-500/40",
+        scoreColor: "text-rose-400",
         icon: ShieldAlert,
         description:
           "Critical security leak, SQL injection vector, or broken build compilation detected. Production deployment is strictly blocked.",
@@ -52,22 +48,20 @@ export function ReleaseDecisionBanner({
       return {
         title: "RELEASE DECISION: REVIEW BEFORE SHIP",
         badgeText: "REVIEW BEFORE SHIP",
-        badgeClass: "bg-status-review/20 text-status-review border-status-review/40",
-        containerClass:
-          "bg-status-review/10 border-status-review/40 shadow-[0_0_50px_rgba(245,158,11,0.15)]",
-        scoreColor: "text-status-review",
+        badgeClass: "bg-amber-950/40 text-amber-300 border-amber-500/40",
+        containerClass: "bg-zinc-900 border-amber-500/40",
+        scoreColor: "text-amber-400",
         icon: AlertTriangle,
         description:
-          "High/Medium severity warnings, accessibility contrast violations, or unoptimized bundles detected. Review recommended before shipping.",
+          "High or medium severity warnings, accessibility contrast violations, or unoptimized bundles detected. Review recommended before shipping.",
       };
     }
     return {
       title: "RELEASE DECISION: READY TO SHIP",
       badgeText: "READY TO SHIP",
-      badgeClass: "bg-status-ready/20 text-status-ready border-status-ready/40",
-      containerClass:
-        "bg-status-ready/10 border-status-ready/40 shadow-[0_0_50px_rgba(16,185,129,0.15)]",
-      scoreColor: "text-status-ready",
+      badgeClass: "bg-emerald-950/40 text-emerald-300 border-emerald-500/40",
+      containerClass: "bg-zinc-900 border-emerald-500/40",
+      scoreColor: "text-emerald-400",
       icon: ShieldCheck,
       description:
         "All automated static AST checks, security scanners, build scripts, and runtime tests passed cleanly. Safe for production deployment.",
@@ -78,21 +72,17 @@ export function ReleaseDecisionBanner({
   const Icon = config.icon;
 
   return (
-    <div
-      className={`rounded-3xl border p-6 md:p-8 transition-all duration-300 ${config.containerClass}`}
-    >
+    <div className={`rounded-2xl border p-6 md:p-8 transition-colors ${config.containerClass}`}>
       <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
         {/* Left Status Info */}
         <div className="space-y-3 max-w-2xl">
           <div className="flex flex-wrap items-center gap-3">
-            <span
-              className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-mono font-bold border ${config.badgeClass}`}
-            >
-              <span className="w-2 h-2 rounded-full bg-current animate-pulse" />
+            <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-mono font-bold border ${config.badgeClass}`}>
+              <span className="w-2 h-2 rounded-full bg-current" />
               {config.badgeText}
             </span>
             {projectName && (
-              <span className="text-xs font-mono text-slate-400">
+              <span className="text-xs font-mono text-zinc-400">
                 Repository: <span className="text-white font-semibold">{projectName}</span>
               </span>
             )}
@@ -105,44 +95,42 @@ export function ReleaseDecisionBanner({
             </h2>
           </div>
 
-          <p className="text-sm md:text-base text-slate-300 font-body leading-relaxed">
+          <p className="text-sm md:text-base text-zinc-300 font-body leading-relaxed">
             {config.description}
           </p>
         </div>
 
         {/* Right Score & Metrics */}
-        <div className="flex flex-wrap sm:flex-nowrap items-center gap-4 lg:gap-6 bg-oled-950/80 border border-oled-800 p-5 rounded-2xl shrink-0">
-          {/* Circular Score Gauge */}
-          <div className="text-center pr-4 sm:border-r sm:border-oled-800">
-            <span className="text-[11px] font-mono text-slate-400 uppercase tracking-wider block mb-1">
+        <div className="flex flex-wrap sm:flex-nowrap items-center gap-4 lg:gap-6 bg-zinc-950 border border-zinc-800 p-5 rounded-xl shrink-0">
+          <div className="text-center pr-4 sm:border-r sm:border-zinc-800">
+            <span className="text-[11px] font-mono text-zinc-400 uppercase tracking-wider block mb-1">
               Safety Score
             </span>
             <div className={`text-4xl md:text-5xl font-mono font-black ${config.scoreColor}`}>
               {overallScore}
-              <span className="text-xs text-slate-500 font-normal">/100</span>
+              <span className="text-xs text-zinc-500 font-normal">/100</span>
             </div>
           </div>
 
-          {/* Finding Counters */}
           <div className="grid grid-cols-2 gap-x-4 gap-y-2 text-xs font-mono">
             <div className="flex items-center gap-2">
-              <span className="w-2 h-2 rounded-full bg-status-blocked" />
-              <span className="text-slate-400">Critical:</span>
+              <span className="w-2 h-2 rounded-full bg-rose-500" />
+              <span className="text-zinc-400">Critical:</span>
               <span className="text-white font-bold">{criticalCount}</span>
             </div>
             <div className="flex items-center gap-2">
               <span className="w-2 h-2 rounded-full bg-rose-400" />
-              <span className="text-slate-400">High:</span>
+              <span className="text-zinc-400">High:</span>
               <span className="text-white font-bold">{highCount}</span>
             </div>
             <div className="flex items-center gap-2">
-              <span className="w-2 h-2 rounded-full bg-status-review" />
-              <span className="text-slate-400">Medium:</span>
+              <span className="w-2 h-2 rounded-full bg-amber-400" />
+              <span className="text-zinc-400">Medium:</span>
               <span className="text-white font-bold">{mediumCount}</span>
             </div>
             <div className="flex items-center gap-2">
-              <span className="w-2 h-2 rounded-full bg-slate-400" />
-              <span className="text-slate-400">Low:</span>
+              <span className="w-2 h-2 rounded-full bg-zinc-400" />
+              <span className="text-zinc-400">Low:</span>
               <span className="text-white font-bold">{lowCount}</span>
             </div>
           </div>

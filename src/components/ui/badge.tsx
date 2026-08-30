@@ -22,27 +22,27 @@ export function Badge({ className, variant = "default", pulse = false, children,
     "inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-mono font-semibold transition-colors";
 
   const variantStyles: Record<string, string> = {
-    default: "bg-oled-800 text-slate-200 border border-oled-700",
-    secondary: "bg-oled-850 text-slate-400 border border-oled-800",
-    outline: "bg-transparent text-slate-300 border border-oled-700",
-    critical: "bg-status-blocked/15 text-status-blocked border border-status-blocked/30",
-    high: "bg-rose-500/15 text-rose-400 border border-rose-500/30",
-    medium: "bg-status-review/15 text-status-review border border-status-review/30",
-    low: "bg-yellow-500/10 text-yellow-400 border border-yellow-500/20",
-    info: "bg-sky-500/15 text-sky-400 border border-sky-500/30",
-    ready: "bg-status-ready/15 text-status-ready border border-status-ready/30",
-    cyan: "bg-status-cyan/15 text-status-cyan border border-status-cyan/30",
-    purple: "bg-purple-500/15 text-purple-400 border border-purple-500/30",
+    default: "bg-zinc-800 text-zinc-200 border border-zinc-700",
+    secondary: "bg-zinc-900 text-zinc-400 border border-zinc-800",
+    outline: "bg-transparent text-zinc-300 border border-zinc-700",
+    critical: "bg-rose-950/40 text-rose-300 border border-rose-500/30",
+    high: "bg-rose-950/40 text-rose-300 border border-rose-500/30",
+    medium: "bg-amber-950/40 text-amber-300 border border-amber-500/30",
+    low: "bg-yellow-950/30 text-yellow-300 border border-yellow-500/20",
+    info: "bg-sky-950/40 text-sky-300 border border-sky-500/30",
+    ready: "bg-emerald-950/40 text-emerald-300 border border-emerald-500/30",
+    cyan: "bg-cyan-950/40 text-cyan-300 border border-cyan-500/30",
+    purple: "bg-purple-950/40 text-purple-300 border border-purple-500/30",
   };
 
   const dotColors: Record<string, string> = {
-    critical: "bg-status-blocked",
+    critical: "bg-rose-400",
     high: "bg-rose-400",
-    medium: "bg-status-review",
+    medium: "bg-amber-400",
     low: "bg-yellow-400",
     info: "bg-sky-400",
-    ready: "bg-status-ready",
-    cyan: "bg-status-cyan",
+    ready: "bg-emerald-400",
+    cyan: "bg-cyan-400",
     purple: "bg-purple-400",
   };
 

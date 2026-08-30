@@ -1,7 +1,8 @@
 "use client";
 
-import React, { useEffect, useRef } from "react";
+import React, { useEffect, useRef, useCallback } from "react";
 import { useRouter } from "next/navigation";
+import { motion, AnimatePresence } from "framer-motion";
 import { useAuditStore, LogEntry } from "@/store/audit-store";
 import { AuditProgressCard } from "@/components/audit/AuditProgressCard";
 import { Progress } from "@/components/ui/progress";
@@ -9,13 +10,9 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
   Terminal,
-  Play,
   XCircle,
   ArrowRight,
-  ShieldCheck,
-  Cpu,
   Loader2,
-  Sparkles,
 } from "lucide-react";
 import { CheckCategory } from "@/types";
 
@@ -29,22 +26,21 @@ const CATEGORY_NAMES: Record<CheckCategory, string> = {
 
 export default function AuditExecutionPage() {
   const router = useRouter();
-  const {
-    snapshot,
-    selectedChecks,
-    isAuditing,
-    auditProgress,
-    currentCategory,
-    categoryResults,
-    categoryStatuses,
-    logs,
-    startAudit,
-    cancelAudit,
-  } = useAuditStore();
+
+  // Atomic Zustand Store Selectors
+  const snapshot = useAuditStore((s) => s.snapshot);
+  const selectedChecks = useAuditStore((s) => s.selectedChecks);
+  const isAuditing = useAuditStore((s) => s.isAuditing);
+  const auditProgress = useAuditStore((s) => s.auditProgress);
+  const currentCategory = useAuditStore((s) => s.currentCategory);
+  const categoryResults = useAuditStore((s) => s.categoryResults);
+  const categoryStatuses = useAuditStore((s) => s.categoryStatuses);
+  const logs = useAuditStore((s) => s.logs);
+  const startAudit = useAuditStore((s) => s.startAudit);
+  const cancelAudit = useAuditStore((s) => s.cancelAudit);
 
   const terminalEndRef = useRef<HTMLDivElement>(null);
 
-  // Auto-start audit on mount if not already auditing or if progress is 0
   useEffect(() => {
     if (!snapshot) {
       router.push("/");
@@ -53,93 +49,101 @@ export default function AuditExecutionPage() {
 
     if (!isAuditing && auditProgress < 100) {
       startAudit(() => {
-        // Auto transition after brief completion pause
         setTimeout(() => {
           router.push("/results");
-        }, 1200);
+        }, 1000);
       });
     }
   }, [snapshot, isAuditing, auditProgress, startAudit, router]);
 
-  // Auto scroll logs
   useEffect(() => {
     terminalEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [logs]);
 
-  const handleSkipToResults = () => {
+  const handleSkipToResults = useCallback(() => {
     router.push("/results");
-  };
+  }, [router]);
 
-  const handleCancel = () => {
+  const handleCancel = useCallback(() => {
     cancelAudit();
     router.push("/project");
-  };
+  }, [cancelAudit, router]);
 
   if (!snapshot) return null;
 
   return (
-    <div className="min-h-screen bg-black text-slate-100 selection:bg-cyan-500 selection:text-black">
+    <div className="min-h-screen bg-black text-zinc-100 selection:bg-cyan-500 selection:text-black relative">
+      <div className="absolute inset-0 bg-[linear-gradient(to_right,#ffffff08_1px,transparent_1px),linear-gradient(to_bottom,#ffffff08_1px,transparent_1px)] bg-[size:32px_32px] pointer-events-none" />
+
       {/* Top Header */}
-      <header className="border-b border-oled-800 bg-black/80 backdrop-blur-md sticky top-0 z-40">
+      <header className="border-b border-zinc-800 bg-zinc-950/90 backdrop-blur-xl sticky top-0 z-40">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-lg bg-status-cyan/10 border border-status-cyan/30 flex items-center justify-center text-status-cyan font-bold text-sm">
+            <div className="w-8 h-8 rounded-xl bg-cyan-500/10 border border-cyan-500/30 flex items-center justify-center text-cyan-400 font-bold text-sm">
               <Loader2 className={`w-4 h-4 ${isAuditing ? "animate-spin" : ""}`} />
             </div>
             <div className="flex items-center gap-2">
-              <span className="font-heading font-extrabold text-white text-base sm:text-lg">
-                PreFlight Execution Suite
+              <span className="font-heading font-extrabold text-white text-base sm:text-lg tracking-tight">
+                Execution Suite
               </span>
               <Badge variant="cyan" pulse={isAuditing}>
-                {isAuditing ? "ACTIVE PIPELINE" : "COMPLETED"}
+                {isAuditing ? "ACTIVE STREAM" : "COMPLETED"}
               </Badge>
             </div>
           </div>
 
           <div className="flex items-center gap-2">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={handleCancel}
-              className="text-xs text-slate-400 hover:text-white"
-            >
-              <XCircle className="w-3.5 h-3.5 mr-1" />
-              Cancel
-            </Button>
-            <Button
-              variant="cyan"
-              size="sm"
-              onClick={handleSkipToResults}
-              className="text-xs"
-            >
-              <span>View Results</span>
-              <ArrowRight className="w-3.5 h-3.5 ml-1" />
-            </Button>
+            {isAuditing && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleCancel}
+                className="text-xs text-zinc-400 hover:text-white border-zinc-800"
+              >
+                <XCircle className="w-3.5 h-3.5 mr-1" />
+                Cancel
+              </Button>
+            )}
+            {(!isAuditing || auditProgress === 100) && (
+              <Button
+                variant="cyan"
+                size="sm"
+                onClick={handleSkipToResults}
+                className="text-xs font-bold"
+              >
+                <span>View Results</span>
+                <ArrowRight className="w-3.5 h-3.5 ml-1" />
+              </Button>
+            )}
           </div>
         </div>
       </header>
 
-      {/* Main Execution View */}
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-8">
+      {/* Main Container */}
+      <main className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-8">
         {/* Progress Bar Card */}
-        <section className="bg-oled-900 border border-oled-800 rounded-3xl p-6 md:p-8 space-y-4 shadow-2xl">
+        <motion.section
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="bg-zinc-900 border border-zinc-800 rounded-2xl p-6 md:p-8 space-y-4 shadow-xl"
+        >
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
             <div className="space-y-1">
-              <span className="text-xs font-mono text-slate-400 uppercase tracking-wider block">
+              <span className="text-xs font-mono text-zinc-400 uppercase tracking-wider block">
                 Target: {snapshot.name} ({snapshot.stack.framework || snapshot.stack.language})
               </span>
               <h2 className="text-xl md:text-2xl font-heading font-black text-white flex items-center gap-2.5">
                 {isAuditing ? (
                   <>
                     <span>Running: </span>
-                    <span className="text-status-cyan">
+                    <span className="text-cyan-400">
                       {currentCategory
                         ? CATEGORY_NAMES[currentCategory as CheckCategory]
                         : "Initializing sandbox environment..."}
                     </span>
                   </>
                 ) : (
-                  <span className="text-status-ready">
+                  <span className="text-emerald-400">
                     PreFlight Audit Completed (100%)
                   </span>
                 )}
@@ -151,14 +155,13 @@ export default function AuditExecutionPage() {
             </div>
           </div>
 
-          <Progress value={auditProgress} indicatorColor="gradient" className="h-3" />
-        </section>
+          <Progress value={auditProgress} indicatorColor="cyan" className="h-2.5" />
+        </motion.section>
 
         {/* Categories Progress Cards & Live Terminal Feed Grid */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-          {/* Left: 5 Progress Cards (7 cols) */}
           <div className="lg:col-span-7 space-y-3">
-            <h3 className="text-sm font-mono font-bold text-slate-400 uppercase tracking-wider px-1">
+            <h3 className="text-sm font-mono font-bold text-zinc-400 uppercase tracking-wider px-1">
               Category Execution Stages
             </h3>
 
@@ -174,44 +177,48 @@ export default function AuditExecutionPage() {
             ))}
           </div>
 
-          {/* Right: Live Terminal Event Stream (5 cols) */}
-          <div className="lg:col-span-5 flex flex-col bg-oled-950 border border-oled-800 rounded-2xl overflow-hidden shadow-2xl min-h-[380px] max-h-[560px]">
-            {/* Terminal Header */}
-            <div className="px-4 py-3 bg-oled-900 border-b border-oled-800 flex items-center justify-between">
-              <div className="flex items-center gap-2 text-xs font-mono text-slate-400">
-                <Terminal className="w-4 h-4 text-status-cyan" />
+          <div className="lg:col-span-5 flex flex-col bg-zinc-950 border border-zinc-800 rounded-2xl overflow-hidden shadow-xl min-h-[380px] max-h-[560px]">
+            <div className="px-4 py-3 bg-zinc-900 border-b border-zinc-800 flex items-center justify-between">
+              <div className="flex items-center gap-2 text-xs font-mono text-zinc-400">
+                <Terminal className="w-4 h-4 text-cyan-400" />
                 <span className="font-bold text-white">live-event-stream.log</span>
               </div>
-              <span className="text-[10px] font-mono text-slate-500">
-                {logs.length} events logged
+              <span className="text-[10px] font-mono text-zinc-500">
+                {logs.length} events
               </span>
             </div>
 
-            {/* Terminal Log Output */}
-            <div className="p-4 flex-1 overflow-y-auto space-y-2 font-mono text-xs text-slate-300">
-              {logs.length === 0 ? (
-                <div className="text-slate-600 italic">Waiting for pipeline events...</div>
-              ) : (
-                logs.map((log: LogEntry) => {
-                  const colorClass =
-                    log.level === "error"
-                      ? "text-rose-400 bg-rose-950/20 px-2 py-0.5 rounded border border-rose-500/20"
-                      : log.level === "warn"
-                      ? "text-amber-300 bg-amber-950/20 px-2 py-0.5 rounded border border-amber-500/20"
-                      : log.level === "success"
-                      ? "text-emerald-400"
-                      : "text-slate-300";
+            <div className="p-4 flex-1 overflow-y-auto space-y-2 font-mono text-xs text-zinc-300">
+              <AnimatePresence>
+                {logs.length === 0 ? (
+                  <div className="text-zinc-600 italic">Waiting for pipeline events...</div>
+                ) : (
+                  logs.map((log: LogEntry) => {
+                    const colorClass =
+                      log.level === "error"
+                        ? "text-rose-400 bg-rose-950/30 px-2 py-0.5 rounded border border-rose-500/20"
+                        : log.level === "warn"
+                        ? "text-amber-300 bg-amber-950/30 px-2 py-0.5 rounded border border-amber-500/20"
+                        : log.level === "success"
+                        ? "text-emerald-400"
+                        : "text-zinc-300";
 
-                  return (
-                    <div key={log.id} className="flex items-start gap-2 leading-relaxed">
-                      <span className="text-slate-600 shrink-0 select-none">
-                        [{log.timestamp}]
-                      </span>
-                      <span className={colorClass}>{log.message}</span>
-                    </div>
-                  );
-                })
-              )}
+                    return (
+                      <motion.div
+                        key={log.id}
+                        initial={{ opacity: 0, x: -5 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        className="flex items-start gap-2 leading-relaxed"
+                      >
+                        <span className="text-zinc-600 shrink-0 select-none">
+                          [{log.timestamp}]
+                        </span>
+                        <span className={colorClass}>{log.message}</span>
+                      </motion.div>
+                    );
+                  })
+                )}
+              </AnimatePresence>
               <div ref={terminalEndRef} />
             </div>
           </div>

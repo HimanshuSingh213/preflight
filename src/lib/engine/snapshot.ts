@@ -5,9 +5,19 @@ import { ExtractedWorkspace } from './extract';
 import { detectStack } from './detector';
 
 export function createProjectSnapshot(workspace: ExtractedWorkspace): ProjectSnapshot {
-  const { projectId, workspacePath, fileList, totalFiles, ignoredFiles } = workspace;
+  const { projectId, originalName, workspacePath, fileList, totalFiles, ignoredFiles } = workspace;
 
   const stack = detectStack(workspacePath, fileList, totalFiles, ignoredFiles);
+
+  // Ensure clean user-facing project name (strip any internal pf_ / pf_folder_ UUIDs)
+  let displayName = stack.name;
+  if (!displayName || displayName.startsWith('pf_') || displayName.startsWith('pf-') || displayName.includes('pf_folder')) {
+    displayName = originalName || 'Project Workspace';
+  }
+  if (displayName.startsWith('pf_') || displayName.includes('pf_folder')) {
+    displayName = 'Project Workspace';
+  }
+  stack.name = displayName;
 
   const files: FileSnapshot[] = fileList.map((relPath) => {
     const fullPath = path.join(workspacePath, relPath);
@@ -73,7 +83,7 @@ export function createProjectSnapshot(workspace: ExtractedWorkspace): ProjectSna
   return {
     id: projectId,
     uploadedAt: new Date().toISOString(),
-    name: stack.name,
+    name: displayName,
     stack,
     files,
     dependencies,

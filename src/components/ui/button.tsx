@@ -18,31 +18,31 @@ export interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElemen
 export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
   ({ className, variant = "primary", size = "md", isLoading = false, children, disabled, ...props }, ref) => {
     const baseStyles =
-      "inline-flex items-center justify-center font-heading font-semibold rounded-xl transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 disabled:opacity-50 disabled:pointer-events-none cursor-pointer active:scale-[0.98] select-none";
+      "inline-flex items-center justify-center font-heading font-semibold rounded-xl transition-all duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 disabled:opacity-50 disabled:pointer-events-none cursor-pointer active:scale-[0.98] select-none";
 
     const variantStyles: Record<string, string> = {
       primary:
-        "bg-white text-black hover:bg-slate-200 focus-visible:ring-white shadow-[0_0_20px_rgba(255,255,255,0.15)]",
+        "bg-white text-black hover:bg-zinc-200 focus-visible:ring-white font-bold",
       secondary:
-        "bg-oled-850 hover:bg-oled-800 text-slate-200 border border-oled-700 hover:border-slate-600 focus-visible:ring-slate-400",
+        "bg-zinc-900 hover:bg-zinc-800 text-zinc-200 border border-zinc-700 focus-visible:ring-zinc-400",
       outline:
-        "bg-transparent hover:bg-oled-850 text-slate-300 border border-oled-800 hover:border-oled-700 focus-visible:ring-slate-500",
+        "bg-transparent hover:bg-zinc-900 text-zinc-300 border border-zinc-800 hover:border-zinc-700 focus-visible:ring-zinc-500",
       ghost:
-        "bg-transparent hover:bg-oled-850 text-slate-400 hover:text-white focus-visible:ring-slate-500",
+        "bg-transparent hover:bg-zinc-900 text-zinc-400 hover:text-white focus-visible:ring-zinc-500",
       destructive:
-        "bg-status-blocked/15 hover:bg-status-blocked/25 text-status-blocked border border-status-blocked/40 focus-visible:ring-rose-500 shadow-[0_0_20px_rgba(244,63,94,0.15)]",
+        "bg-rose-950/40 hover:bg-rose-900/60 text-rose-300 border border-rose-500/40 focus-visible:ring-rose-500 font-bold",
       cyan:
-        "bg-status-cyan text-black hover:bg-cyan-400 font-bold focus-visible:ring-cyan-400 shadow-[0_0_20px_rgba(6,182,212,0.3)]",
+        "bg-cyan-500 text-black hover:bg-cyan-400 font-bold focus-visible:ring-cyan-400 shadow-md",
       emerald:
-        "bg-status-ready text-black hover:bg-emerald-400 font-bold focus-visible:ring-emerald-400 shadow-[0_0_20px_rgba(16,185,129,0.3)]",
+        "bg-emerald-500 text-black hover:bg-emerald-400 font-bold focus-visible:ring-emerald-400 shadow-md",
       amber:
-        "bg-status-review text-black hover:bg-amber-400 font-bold focus-visible:ring-amber-400 shadow-[0_0_20px_rgba(245,158,11,0.3)]",
+        "bg-amber-500 text-black hover:bg-amber-400 font-bold focus-visible:ring-amber-400 shadow-md",
     };
 
     const sizeStyles: Record<string, string> = {
       sm: "text-xs px-3 py-1.5 gap-1.5 rounded-lg",
       md: "text-sm px-4 py-2.5 gap-2 rounded-xl",
-      lg: "text-base px-6 py-3.5 gap-2.5 rounded-2xl",
+      lg: "text-base px-6 py-3.5 gap-2.5 rounded-xl",
       icon: "h-9 w-9 p-0 rounded-lg",
     };
 
